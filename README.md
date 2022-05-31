@@ -58,6 +58,8 @@ Stage0 is the fresh executable delivered to target by the attacker.  It contains
 
 At the conclusion of this sequence of events, Stage0 exits.  Because it was deleted from disk in step 2 and is no longer running in memory, Stage0 is effectively gone; Without prior knowledge of this technique the rest of the malware lifecycle will be a whole lot more confusing than it already is.
 
+In step 4 the processor name and Microsoft ProductID are gathered; the ProductID is retreived from the Registry, and this value can be manually modified which presents and easy opportunity for a Blue Teamer to match their sandbox to the target environment.  Depending on what environmental information is gathered this can become easier or more difficult.
+
 ### Stage1
 
 Stage1 was dropped by Stage0 and exists in the same exact location as Stage0 did (to include the name).  Stage2 is stored as an ADS of Stage1.  When the attacker/persistence subsequently executes the malware, they are executing Stage1.
