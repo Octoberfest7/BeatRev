@@ -84,7 +84,7 @@ There are two points that Stage1 could detect that it is not being ran from the 
 
 Stage2 is the meat and potatoes of the malware chain; It is a fully fledged shellcode runner/piece of malware itself.  By encrypting and protecting it in the way that we have, the actions of the end state malware are much better obfuscated and protected from reverse engineers and malware analysts. During development I used one of my existing shellcode runners containing CobaltStrike shellcode, but this could be anything the attacker wants to run and protect.
 
-## Impact and Mitigation
+## Impact, Mitigation, and Further Work
 
 So what is actually accomplished with a malware lifecycle like this?  There are a few interesting quirks to talk about.
 
@@ -96,9 +96,11 @@ In theory (because again I have no reversing experience), Stage1 should be able 
 
 Application Whitelisting would significantly frustrate this lifecycle.  Stage0/Stage1 may be able to be side loaded as a DLL, however I suspect that Stage2 as an ADS would present some issues.  I do not have an environment to test malware against AWL nor have I bothered porting this all to DLL format so I cannot say.  I am sure there are creative ways around these issues.
 
+I am also fairly confident that there are smarter ways to run Stage2 than dropping to disk and calling CreateProcess; Either manually mapping the executable or using a tool like [Donut](https://github.com/TheWover/donut) to turn it into shellcode seem like reasonable ideas. 
+
 ## Code and binary
 
-During development I created a Builder application that Stage1 and Stage2 may be fed to in order to produce a functional Stage0; this will not be provided however I will be providing *most* of the source code for stage1.  Stage0 will be excluded as an exercise for the reader, and stage2 is whatever standalone executable you want to run+protect. This POC may be further researched at the effort and discretion of able readers. 
+During development I created a Builder application that Stage1 and Stage2 may be fed to in order to produce a functional Stage0; this will not be provided however I will be providing *most* of the source code for stage1 as it is the piece that would be most visable to a Blue Teamer. Stage0 will be excluded as an exercise for the reader, and stage2 is whatever standalone executable you want to run+protect. This POC may be further researched at the effort and discretion of able readers. 
 
 I will be providing a compiled copy of this malware as Dropper64.exe.  Dropper64.exe is compiled for x64.  Dropper64.exe is Stage0; it contains Stage1 and Stage2. On execution, Stage1 and Stage2 will drop to disk but will NOT automatically execute, you must run Dropper64.exe(now Stage1) again.  Stage2 is an x64 version of calc.exe.  I am including this for any Blue Teamers who want to take a look at this, but keep in mind in an incident response scenario 99& of the time you will be getting Stage1/Stage2, Stage0 will be gone. 
 
