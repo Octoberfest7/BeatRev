@@ -43,7 +43,7 @@ With the aforementioned problem regarding hard-coding values in mind, I ultimate
 
 ### Stage0
 
-Stage0 is the fresh executable delivered to target by the attacker.  It contains Stage1 and Stage2 as AES encrypted byte arrays; this is done to protect the malware in transit, or should a defender somehow get their hands on a copy of Stage0 (which *shouldn't* happen).  The AES Key and IV are contained within Stage0 so in reality this won't protect Stage1 or Stage2 from a competent Blue Teamer.   
+Stage0 is the fresh executable delivered to target by the attacker.  It contains Stage1 and Stage2 as [AES](https://github.com/kokke/tiny-AES-c) encrypted byte arrays; this is done to protect the malware in transit, or should a defender somehow get their hands on a copy of Stage0 (which *shouldn't* happen).  The AES Key and IV are contained within Stage0 so in reality this won't protect Stage1 or Stage2 from a competent Blue Teamer.   
 
 **Stage0** performs the following actions:
 
