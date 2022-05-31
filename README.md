@@ -72,8 +72,11 @@ Stage1 was dropped by Stage0 and exists in the same exact location as Stage0 did
 6) Checks first two bytes of decryted Stage2 buffer; if not MZ (unsuccessful decryption), delete Stage1/Stage2, exit.
 7) Writes decrypted Stage2 back to disk as ADS of Stage1
 8) Calls CreateProcess on Stage2.  If this fails (unsuccessful decryption), delete Stage1/Stage2, exit.
-9) Encrypts Stage2 using victim-specific AES Key/IV
-10) Writes encrypted Stage2 back to disk as ADS of Stage1.
+9) Sleeps 5 seconds to allow Stage2 to execute + exit so it can be overwritten.
+10) Encrypts Stage2 using victim-specific AES Key/IV
+11) Writes encrypted Stage2 back to disk as ADS of Stage1.
+
+Note that Stage2 MUST exit in order for it to be overwritten; the self-deletion trick does not appear to work on files that are already ADS's, as the self-deletion technique relies on renaming the primary data stream of the executable.  Stage2 will ideally be an inject or spawn+inject executable.
 
 There are two points that Stage1 could detect that it is not being ran from the same victim and delete itself/Stage2 in order to protect the threat actor.  The first is the check for the executable header after decrypting Stage2 using the gathered environmental information; in theory this step could be bypassed by a reverse engineer, but it is a first good check.  The second protection point is the result of the CreateProcess call- if it fails because Stage2 was not properly decrypted, the malware is similiary deleted.  The result of this call could also be modified to prevent deletion by the reverse engineer, however this doesn't change the fact that Stage2 is encrypted and inaccessible.
 
