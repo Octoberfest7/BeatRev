@@ -97,7 +97,7 @@ Application Whitelisting would significantly frustrate this lifecycle.  Stage0/S
 
 During development I created a Builder application that Stage1 and Stage2 may be fed to in order to produce a functional Stage0; this will not be provided and the codebase for this research is intentionally incomplete.  This POC may be further researched at the effort and discretion of able readers.
 
-I will be providing a RAR file containing a copy of this malware that has been executed; the RAR will contain Stage1 and Stage2 (stored as an ADS). Stage2 will be a short program that pops a messagebox.  I am including this for any Blue Teamers who want to take a look at what they could reasonably expect to be provided in a real world scenario.
+I will be providing a copy of this malware as Dropper64.exe.  Dropper64.exe is compiled for x64.  Dropper64.exe is Stage0; it contains Stage1 and Stage2. On execution, Stage1 and Stage2 will drop to disk but will NOT automatically execute, you must run Dropper64.exe(now Stage1) again.  Stage2 is an x64 version of calc.exe.  I am including this for any Blue Teamers who want to take a look at this, but keep in mind in an incident response scenario 99& of the time you will be getting Stage1/Stage2, Stage0 will be gone. 
 
 ## Conclusion
 
