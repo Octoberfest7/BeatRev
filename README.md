@@ -3,7 +3,7 @@
 ![](BeatRev.gif)
 
 ## TLDR
-The first time the malware runs on a victim it AES encrypts the actual payload using environmental data from that victim.  Each subsequent time the malware is ran it gathers that same environmental info and AES decrypts the payload stored in an alternate data stream of the malware.  If it fails to decrypt/the payload fails to run, the malware deletes itself.  Protection against reverse engineers and malware analysts.
+The first time the malware runs on a victim it AES encrypts the actual payload using environmental data from that victim.  Each subsequent time the malware is ran it gathers that same environmental info, AES decrypts the payload stored in an alternate data stream of the malware, runs the payload, and then re-encrypts the payload.  If it fails to decrypt/the payload fails to run, the malware deletes itself.  Protection against reverse engineers and malware analysts.
 
 ## Introduction
 About 6 months ago it occured to me that while I had learned and done a lot with malware concerning AV/EDR evasion, I had spent very little time concerned with trying to evade or defeat reverse engineering/malware analysis.  This was for a few good reasons:
