@@ -1,9 +1,68 @@
-# BeatRev
+# BeatRev Version 2
 
-![](BeatRev.gif)
+![image](https://user-images.githubusercontent.com/91164728/172944447-f372714a-f225-4063-80a2-d5130ee8fdb7.png)
+
+### Disclaimer/Liability
+The work that follows is a POC to enable malware to "key" itself to a particular victim in order to frustrate efforts of malware analysts.  
+
+I assume no responsibility for malicious use of any ideas or code contained within this project.  I provide this research to further educate infosec professionals and provide additional training/food for thought for Malware Analysts, Reverse Engineers, and Blue Teamers at large. 
 
 ## TLDR
 The first time the malware runs on a victim it AES encrypts the actual payload using environmental data from that victim.  Each subsequent time the malware is ran it gathers that same environmental info, AES decrypts the payload stored in an alternate data stream of the malware, runs the payload, and then re-encrypts the payload.  If it fails to decrypt/the payload fails to run, the malware deletes itself.  Protection against reverse engineers and malware analysts.
+
+## Updated 6 JUNE 2022
+I didn't feel finished with this project so I went back and did a fairly substantial re-write.  The original research and tradecraft may be found [Here]([https://github.com/Octoberfest7/BeatRev#tldr](https://github.com/Octoberfest7/BeatRev/main/README.md#beatrev-original-release))
+
+Major changes are as follows:
+
+1. I have released all source code
+2. I integrated Stephen Fewer's [ReflectiveDLL](https://github.com/stephenfewer/ReflectiveDLLInjection) into the project to replace Stage2
+3. I formatted some of the byte arrays in this project into string format and parse them with UuidFromStringA. [This Repo](https://github.com/whydee86/FUD-ShellCode-UUID/blob/main/RunUuid/RunUuid/RunUuid.cpp) was used as a template.  This was done to lower entropy of Stage0 and Stage1
+4. Stage0 has had a fair bit of AV evasion built into it.  Thanks to Cerbersec's [Project Ares](https://github.com/Cerbersec/Ares) for inspiration
+5. The builder application to produce Stage0 has been included
+
+There are quite a few different things that could be taken from the source code of this project for use elsewhere.  Hopefully it will be useful for someone.
+
+## Problems with Original Release and Mitigations
+There were a few shortcomings with the original release of BeatRev that I decided to try and address.  
+
+Stage2 was previously a standalone executable that was stored as the alternate data stream(ADS) of Stage1.  In order to acheive the AES encryption-by-victim and subsequent decryption and execution, each time Stage1 was ran it would read the ADS, decrypt it, write back to the ADS, call CreateProcess, and then re-encrypt Stage2 and write it back to disk in the ADS.  This was a lot of I/O operations and the CreateProcess call of course wasn't great.
+
+I happened to come upon Steven Fewer's research concerning Reflective DLL's and it seemed like a good fit.  Stage2 is now an RDLL; our malware/shellcode runner/whatever we want to protect can be ported to RDLL format and stored as a byte array within Stage1 that is then decrypted on runtime and executed by Stage1.  This removes all of the I/O operations and the CreateProcess call from Version1 and is a welcome change.
+
+Stage1 did not have any real kind of AV evasion measures programmed in; this was intentional, as it is extra work and wasn't really the point of this research.  During the re-write I took it as an added challenge and added API-hashing to remove functions from the Import Address Table of Stage1.  This has helped with detection and Stage1 has a 4/66 detection rate on VirusTotal.  I was comfortable uploading Stage1 given that is is already keyed to the original box it was ran on and the file signature constantly changes because of the AES encryption that happens.  
+
+I recently started paying attention to entropy as a means to detect malware; to try and lower the otherwise very high entropy that a giant AES encrypted binary blob gives an executable I looked into integrating shellcode stored as UUID's; Because the binary is stored in string representation, there is lower overall entropy in the executable.  Using this technique The entropy of Stage0 is now ~6.8 and Stage1 ~4.5 (on a max scale of 8).  
+
+Finally it is a giant chore to integrate and produce a complete Stage0 due to all of the pieces that must be manipulated.  To make this easier I made a builder application that will ingest a Stage0.c template file, a Stage1 stub, a Stage2 stub, and a raw shellcode file (this was build around Stage2 being a shellcode runner containing CobaltStrike shellcode) and produce a compiled Stage0 payload for use on target.
+
+## Technical Details
+
+The Reflective DLL code from Stephen Fewer contains some Visual Studio compiler-specific instructions; I'm sure it is possible to port the technique over to MingW but I do not have the skills to do so.  The main problem here is that the CobaltStrike shellcode (stageless is ~265K) needs to go inside the RDLL and be compiled.  To get around this and integrate it nicely with the rest of the process I wrote my Stage2 RDLL to contain a global variable chunk of memory that is the size of the CS shellcode; this ~265K chunk of memory has a small placeholder in it that can be located in the compiled binary.  The code in src/Stage2 has this added already.
+
+Once compiled, this Stage2stub is transfered to kali where a binary patch may be performed to stick the real CS shellcode into the place in memory that it belongs.  This produces the complete Stage2.
+
+To avoid the I/O and CreateProcess fiasco previously described, the complete Stage2 must also be patched into the compiled Stage1 by Stage0; this is necessary in order to allow Stage2 to be encrypted once on-target in addition to preventing Stage2 from being stored separately on disk.  The same concept previously described for Stage2 is conducted by Stage0 on target in order to assemble the final Stage1 payload.  It should be noted that the memmem function is used in order to locate the placeholder within each stub; this function is no available on Windows, so a custom implementation was used.  Thanks to Foxik384 [for his code](https://gist.github.com/foxik384/496928d2785e9007d2b838cfa6e019ee).
+
+It should be noted that this binary patch process requires allocated the required memory up front; this has a compounding effect, as Stage1 must now be big enough to also contain Stage2. With the added step of converting Stage2 to a UUID string, Stage2 balloons in size as does Stage1 in order to hold it.  A stage2 RDLL with a compiled size of ~290K results in a Stage0 payload of ~1.38M, and a Stage1 payload of ~700K. 
+
+The builder application only supports creating x64 EXE's.  However with a little more work in theory you could make Stage0 a DLL, as well as Stage1, and have the whole lifecycle exist as a DLL hijack instead of a standalone executable. 
+
+## Instructions
+
+These instructions will get you on your way to using this POC.
+
+1. Compile Builder using gcc -o builder src/Builder/BeatRevV2Builder.c
+2. Modify sc_length variable in src/Stage2/dll/src/ReflectiveDLL.c to match the length of raw shellcode file used with builder ( I have included fakesc.bin for example)
+3. Compile Stage2 (in visual studio, ReflectiveDLL project uses some VS compiler-specific instructions)
+4. Move compiled stage2stub.dll back to kali, modify src/Stage1/newstage1.c and define stage2size as the size of stage2stub
+5. Compile stage1stub using x86_64-w64-mingw32-gcc newstage1.c -o stage1stub.exe -s -DUNICODE -Os -L /usr/x86_64-w64-mingw32/lib -l:librpcrt4.a
+6. Run builder using syntax: ./builder src/Stage0/newstage0_exe.c x64 stage1stub.exe stage2stub.dll shellcode.bin
+7. Builder will produce dropper.exe.  This is a formatted and compiled Stage0 payload for use on target.
+
+# BeatRev Original Release
+
+![](BeatRev.gif)
 
 ## Introduction
 About 6 months ago it occured to me that while I had learned and done a lot with malware concerning AV/EDR evasion, I had spent very little time concerned with trying to evade or defeat reverse engineering/malware analysis.  This was for a few good reasons:
@@ -12,11 +71,6 @@ About 6 months ago it occured to me that while I had learned and done a lot with
 2) When you are talking about legal, sanctioned Red Team work there isn't really a need to try and frustrate or defeat a reverse engineer because the activity should have been deconflicted long before it reaches that stage. 
 
 Nonetheless it was an interesting thought experiment and I had a few colleagues who DO know about malware analysis that I could bounce ideas off of. It seemed a challenge of a whole different magnitude compared to AV/EDR evasion and one I decided to take a stab at.
-
-### Disclaimer/Liability
-The work that follows is a POC to enable malware to "key" itself to a particular victim in order to frustrate efforts of malware analysts.  
-
-I assume no responsibility for malicious use of any ideas or code contained within this project.  I provide this research to further educate infosec professionals and provide additional training/food for thought for Malware Analysts, Reverse Engineers, and Blue Teamers at large. 
 
 ## Premise
 
