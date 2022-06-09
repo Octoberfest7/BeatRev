@@ -1,7 +1,5 @@
 # BeatRev Version 2
 
-![image](https://user-images.githubusercontent.com/91164728/172944447-f372714a-f225-4063-80a2-d5130ee8fdb7.png)
-
 ### Disclaimer/Liability
 The work that follows is a POC to enable malware to "key" itself to a particular victim in order to frustrate efforts of malware analysts.  
 
@@ -10,8 +8,13 @@ I assume no responsibility for malicious use of any ideas or code contained with
 ## TLDR
 The first time the malware runs on a victim it AES encrypts the actual payload using environmental data from that victim.  Each subsequent time the malware is ran it gathers that same environmental info, AES decrypts the payload stored in an alternate data stream of the malware, runs the payload, and then re-encrypts the payload.  If it fails to decrypt/the payload fails to run, the malware deletes itself.  Protection against reverse engineers and malware analysts.
 
+![](BeatRev2.gif)
+
 ## Updated 6 JUNE 2022
-I didn't feel finished with this project so I went back and did a fairly substantial re-write.  The original research and tradecraft may be found [Here]([https://github.com/Octoberfest7/BeatRev#tldr](https://github.com/Octoberfest7/BeatRev/main/README.md#beatrev-original-release))
+
+![image](https://user-images.githubusercontent.com/91164728/172944447-f372714a-f225-4063-80a2-d5130ee8fdb7.png)
+
+I didn't feel finished with this project so I went back and did a fairly substantial re-write.  The original research and tradecraft may be found [Here](https://github.com/Octoberfest7/BeatRev/main/README.md#beatrev-original-release).
 
 Major changes are as follows:
 
