@@ -6,7 +6,7 @@ The work that follows is a POC to enable malware to "key" itself to a particular
 I assume no responsibility for malicious use of any ideas or code contained within this project.  I provide this research to further educate infosec professionals and provide additional training/food for thought for Malware Analysts, Reverse Engineers, and Blue Teamers at large. 
 
 ## TLDR
-The first time the malware runs on a victim it AES encrypts the actual payload using environmental data from that victim.  Each subsequent time the malware is ran it gathers that same environmental info, AES decrypts the payload stored in an alternate data stream of the malware, runs the payload, and then re-encrypts the payload.  If it fails to decrypt/the payload fails to run, the malware deletes itself.  Protection against reverse engineers and malware analysts.
+The first time the malware runs on a victim it AES encrypts the actual payload(an RDLL) using environmental data from that victim.  Each subsequent time the malware is ran it gathers that same environmental info, AES decrypts the payload stored as a byte array within the malware, and runs it. If it fails to decrypt/the payload fails to run, the malware deletes itself.  Protection against reverse engineers and malware analysts.
 
 ![](BeatRev2.gif)
 
