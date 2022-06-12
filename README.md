@@ -14,7 +14,7 @@ The first time the malware runs on a victim it AES encrypts the actual payload(a
 
 ![image](https://user-images.githubusercontent.com/91164728/172944447-f372714a-f225-4063-80a2-d5130ee8fdb7.png)
 
-I didn't feel finished with this project so I went back and did a fairly substantial re-write.  The original research and tradecraft may be found [Here](https://github.com/Octoberfest7/BeatRev/main/README.md#beatrev-original-release).
+I didn't feel finished with this project so I went back and did a fairly substantial re-write.  The original research and tradecraft may be found [Here](https://github.com/Octoberfest7/BeatRev#beatrev-original-release).
 
 Major changes are as follows:
 
